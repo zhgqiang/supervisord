@@ -394,14 +394,14 @@ func (p *Process) getExitCodes() []int {
 
 // check if the process is running or not
 func (p *Process) isRunning() bool {
-	time.Sleep(10 * time.Second)
+	//time.Sleep(5 * time.Second)
 	if p.cmd != nil && p.cmd.Process != nil {
 		if runtime.GOOS == "windows" {
 			proc, err := os.FindProcess(p.cmd.Process.Pid)
-			log.WithFields(log.Fields{"program": p.GetName()}).Infof("FindProcess id: %d", p.cmd.Process.Pid)
-			if err != nil {
-				log.WithFields(log.Fields{"program": p.GetName()}).Errorf("FindProcess error: %v", err)
-			}
+			//log.WithFields(log.Fields{"program": p.GetName()}).Infof("FindProcess id: %d", p.cmd.Process.Pid)
+			//if err != nil {
+			//	log.WithFields(log.Fields{"program": p.GetName()}).Errorf("FindProcess error: %v", err)
+			//}
 			return proc != nil && err == nil
 		}
 		return p.cmd.Process.Signal(syscall.Signal(0)) == nil
@@ -531,6 +531,7 @@ func (p *Process) run(finishCb func()) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
+	p.startTime = time.Now()
 	// check if the program is in running state
 	if p.isRunning() {
 		log.WithFields(log.Fields{"program": p.GetName()}).Info("Don't start program because it is running")
@@ -538,7 +539,7 @@ func (p *Process) run(finishCb func()) {
 		return
 
 	}
-	p.startTime = time.Now()
+	//log.WithFields(log.Fields{"program": p.GetName()}).Info("program not running")
 	atomic.StoreInt32(p.retryTimes, 0)
 	startSecs := p.getStartSeconds()
 	restartPause := p.getRestartPause()
@@ -640,7 +641,9 @@ func (p *Process) run(finishCb func()) {
 					break LOOP
 				}
 			}
-			time.Sleep(time.Duration(100) * time.Millisecond)
+			//log.WithFields(log.Fields{"program": p.GetName()}).Info("11111")
+			//time.Sleep(time.Duration(100) * time.Millisecond)
+			time.Sleep(time.Second * 1)
 		}
 
 		atomic.StoreInt32(&programExited, 1)
